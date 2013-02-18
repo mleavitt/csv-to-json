@@ -128,6 +128,9 @@
 				string = string.substring(2,string.length-2);
 				array = string.split('", "');
 				while(i < array.length){
+					// remove leading/trailing whitespace
+					array[i] = array[i].replace(/^[\s]*|[\s]*$/g, "");
+					// remove empty contents
 					if(array[i].length) i++;
 					else array.splice(i,1);
 				}
