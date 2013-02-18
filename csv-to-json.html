@@ -46,11 +46,13 @@
 			
 			function parseCSVLine (line)
 			{
+
 				line = line.split(',');
 				
 				// check for splits performed inside quoted strings and correct if needed
 				for (var i = 0; i < line.length; i++)
 				{
+					
 					var chunk = line[i].replace(/^[\s]*|[\s]*$/g, "");
 					var quote = "";
 					if (chunk.charAt(0) == '"' || chunk.charAt(0) == "'") quote = chunk.charAt(0);
@@ -75,19 +77,61 @@
 							line.splice(j, 1);
 						}
 					}
+
+					if( line[i].indexOf("'\"") === 0 &&
+						line[i].indexOf("\"'") === line[i].length - 2 ) {
+						line[i] = convertStringToArray( line[i] ); 
+					}
+
 				}
 				
 				for (var i = 0; i < line.length; i++)
 				{
-					// remove leading/trailing whitespace
-					line[i] = line[i].replace(/^[\s]*|[\s]*$/g, "");
+					if( typeof line[i] === "string" ) {
+						// remove leading/trailing whitespace
+						line[i] = line[i].replace(/^[\s]*|[\s]*$/g, "");
+						
+						// remove leading/trailing quotes
+						if (line[i].charAt(0) == '"') line[i] = line[i].replace(/^"|"$/g, "");
+						else if (line[i].charAt(0) == "'") line[i] = line[i].replace(/^'|'$/g, "");
+					}
 					
-					// remove leading/trailing quotes
-					if (line[i].charAt(0) == '"') line[i] = line[i].replace(/^"|"$/g, "");
-					else if (line[i].charAt(0) == "'") line[i] = line[i].replace(/^'|'$/g, "");
 				}
 				
 				return line;
+			}
+
+			// Within csv it may be better for the content editor to use carriage returns or newlines to
+			// separate what should be comma-delimited lists for readability. This method searches for those
+			// characters within quoted blocks of content and replaces them with commas then wraps the whole
+			// list in quotes to keep it together.
+			function convertToStringArray(csvText) {
+				var exp = /"(?:[^\\"]+|\\.)*"/g;
+				var matches = csvText.match(exp);
+				if(matches) {
+					var original;
+					var modified;
+					for(var i = 0; i < matches.length; i++){
+						original = matches[i];
+						// surround in quotes to keep array together
+						modified = "'" + original.replace(/[\r\n]/g, '", "') + "'";
+						csvText = csvText.replace(original, modified);
+					}
+				}
+				return csvText;
+			}
+
+			// Final conversion from double-quoted string to array.
+			function convertStringToArray(string) {
+				var array;
+				var i = 0;
+				string = string.substring(2,string.length-2);
+				array = string.split('", "');
+				while(i < array.length){
+					if(array[i].length) i++;
+					else array.splice(i,1);
+				}
+				return array;
 			}
 			
 			function csvToJson ()
@@ -104,6 +148,7 @@
 				
 				if (!error)
 				{
+					csvText = convertToStringArray(csvText);
 					benchmarkStart = new Date();
 					csvRows = csvText.split(/[\r\n]/g); // split into rows
 					
