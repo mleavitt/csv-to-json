@@ -88,8 +88,8 @@
 				for (var i = 0; i < line.length; i++)
 				{
 					if( typeof line[i] === "string" ) {
-						// remove leading/trailing whitespace
-						line[i] = line[i].replace(/^[\s]*|[\s]*$/g, "");
+						// remove leading/trailing whitespace and double-spaces
+						line[i] = line[i].replace(/^[\s]*|[\s]*$/g, "").replace(/\s\s/g, " ");
 						
 						// remove leading/trailing quotes
 						if (line[i].charAt(0) == '"') line[i] = line[i].replace(/^"|"$/g, "");
@@ -128,8 +128,8 @@
 				string = string.substring(2,string.length-2);
 				array = string.split('", "');
 				while(i < array.length){
-					// remove leading/trailing whitespace
-					array[i] = array[i].replace(/^[\s]*|[\s]*$/g, "");
+					// remove leading/trailing whitespace and double-spaces
+					array[i] = array[i].replace(/^[\s]*|[\s]*$/g, "").replace(/\s\s/g, " ");
 					// remove empty contents
 					if(array[i].length) i++;
 					else array.splice(i,1);
